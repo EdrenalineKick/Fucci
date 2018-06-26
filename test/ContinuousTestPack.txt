@@ -1,3 +1,7 @@
 TestHello.hpp
 TestProximity.hpp
 TestFucciAdhesion.hpp
+TestModelScenariosOdes.hpp
+TestFucciAdhesionRandomParams.hpp
+TestFucciAdhesionSeedingParams.hpp
+TestG2PhaseCellCycle.hpp
