@@ -164,7 +164,7 @@ bool ModelScenariosOdeSystem::CalculateStoppingEvent(double time, const std::vec
 
     // Only call this a stopping condition if the mass of the cell is over 0.6
     // (normally cycles from 0.5-1.0 ish!)
-    return ( (rY[4] > 1.6 ) && (rY[1] < apcThreshold) && dy[0] < 0.0 );
+    return ( (rY[4] > 1.6 ) && (rY[1] < apcThreshold) && dy[0] < -0.5 );
 }
 
 double ModelScenariosOdeSystem::CalculateRootFunction(double time, const std::vector<double>& rY)
@@ -189,36 +189,25 @@ double ModelScenariosOdeSystem::CalculateRootFunction(double time, const std::ve
 template<>
 void OdeSystemInformation<ModelScenariosOdeSystem>::Initialise()
 {
-    /*
-     * Initialise state variables.
-     *
-     * These initial conditions are the approximate steady state
-     * solution values while the commented out conditions are taken
-     * from the Tyson and Novak 2001 paper.
-     */
+
     this->mVariableNames.push_back("CDK");
     this->mVariableUnits.push_back("nM");
-//    this->mInitialConditions.push_back(0.1);
     this->mInitialConditions.push_back(0.05);
 
     this->mVariableNames.push_back("APC");
     this->mVariableUnits.push_back("nM");
-//    this->mInitialConditions.push_back(9.8770e-01);
-    this->mInitialConditions.push_back(0.989026454281841);
+    this->mInitialConditions.push_back(0.5);
 
     this->mVariableNames.push_back("ACTt");
     this->mVariableUnits.push_back("nM");
-//    this->mInitialConditions.push_back(1.5011e+00);
-    this->mInitialConditions.push_back(0.1);
+    this->mInitialConditions.push_back(1.0);
 
     this->mVariableNames.push_back("ACTa");
     this->mVariableUnits.push_back("nM");
-//    this->mInitialConditions.push_back(1.2924e+00);
-    this->mInitialConditions.push_back(0.05);
+    this->mInitialConditions.push_back(0.5);
 
     this->mVariableNames.push_back("mass");
     this->mVariableUnits.push_back("");
-//    this->mInitialConditions.push_back(6.5405e-01);
     this->mInitialConditions.push_back(1.0);
 
     this->mInitialised = true;

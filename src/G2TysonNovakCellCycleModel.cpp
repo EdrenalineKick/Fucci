@@ -192,12 +192,11 @@ void G2TysonNovakCellCycleModel::UpdateCellCyclePhase()
                 mG1Duration = GetG1Time() - mBirthTime - GetMDuration();
                 SetSDuration(0.1);
                 mG2PhaseStartTime = GetG1Time() + GetSDuration();
-                mG2Duration = GetOdeStopTime() - mG2PhaseStartTime;
-                mDivideTime = GetOdeStopTime() + 0.2;
+                mDivideTime = GetOdeStopTime() + 0.3*RandomNumberGenerator::Instance()->ranf();
+                mG2Duration = mDivideTime - mG2PhaseStartTime;
+                std::cout << "G1: " << mG1Duration << "\n" << "G2 Start: " << mG2PhaseStartTime << "\n" <<
+                "Divide Time" << mDivideTime << "\n" << "G2 Length: " << mG2Duration << "\n"; 
 
-                std::cout << "Stop Time" << GetOdeStopTime();
-                std::cout << "G1 " << GetG1Time() << " G2 " <<mG2PhaseStartTime <<  " Divide " << mDivideTime << "\n";
-                std::cout << "Total time " << GetMDuration() + GetG1Duration() + GetSDuration() + GetG2Duration() <<"\n";
                 // Update phase
                 if (current_time >= mG2PhaseStartTime)
                 {
@@ -214,7 +213,7 @@ void G2TysonNovakCellCycleModel::UpdateCellCyclePhase()
             // ODE model finished, just increasing time until division...
             if (current_time >= mG2PhaseStartTime)
             {
-                std::cout << "ODE finished \n";
+                // std::cout << "ODE finished \n";
             }
         }
     }
