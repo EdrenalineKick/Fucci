@@ -159,12 +159,12 @@ void G2TysonNovak2001OdeSystem::EvaluateYDerivatives(double time, const std::vec
 
     // std::cout << rDY[6] << " ";
     // Multiply by 60 beacuase the Tyson and Novak 2001 paper has time in minutes, not hours
-    rDY[0] = dx1*60.0;
-    rDY[1] = dx2*60.0;
-    rDY[2] = dx3*60.0;
-    rDY[3] = dx4*60.0;
-    rDY[4] = dx5*60.0;
-    rDY[5] = dx6*60.0;
+    rDY[0] = dx1*10.0;
+    rDY[1] = dx2*10.0;
+    rDY[2] = dx3*10.0;
+    rDY[3] = dx4*10.0;
+    rDY[4] = dx5*10.0;
+    rDY[5] = dx6*10.0;
 }
 
 bool G2TysonNovak2001OdeSystem::CalculateG1Event(double time, const std::vector<double>& rY)

@@ -44,6 +44,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "G2TysonNovak2001OdeSystem.hpp"
 #include "AbstractImprovedOdeBasedPhaseBasedCellCycleModel.hpp"
 #include "StemCellProliferativeType.hpp"
+#include "RandomNumberGenerator.hpp"
 
 class G2TysonNovakCellCycleModel : public AbstractImprovedOdeBasedPhaseBasedCellCycleModel
 {
