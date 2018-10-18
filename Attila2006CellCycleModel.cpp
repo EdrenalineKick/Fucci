@@ -189,13 +189,16 @@ void Attila2006CellCycleModel::UpdateCellCyclePhase()
 
             if (!this->mFinishedRunningOdes)
             {
+                //Constantly update G1 ending time during G1
                 if (mCurrentCellCyclePhase == G_ONE_PHASE)
                 {
-                    mG1Time = GetG1Time();
+                    mG1Time = static_cast<AttilaHybrid2006OdeSystem*>(mpOdeSystem)->GetG1EventTime();
                 }
                 // std::cout << mG1Duration << "\n";
                 // std::cout << "Age: " << GetAge() << "\n";
                 // std::cout << "G1 Time: " << mG1Time << "\n";
+
+                //If current time is greater than the G1 ending time, update the cell cycle phase to the new phase.
                 if (current_time >= mG1Time && mCurrentCellCyclePhase == G_ONE_PHASE)
                 {
                     mCurrentCellCyclePhase = S_PHASE;
@@ -211,18 +214,18 @@ void Attila2006CellCycleModel::UpdateCellCyclePhase()
             if (this->mFinishedRunningOdes)
             {
                 // Update durations of each phase
-                mG1Duration = GetG1Time() - mBirthTime - GetMDuration();
-                mG2PhaseStartTime = GetG1Time() + GetSDuration();
+                mG1Duration = static_cast<AttilaHybrid2006OdeSystem*>(mpOdeSystem)->GetG1EventTime() - mBirthTime - GetMDuration();
+                mG2PhaseStartTime = static_cast<AttilaHybrid2006OdeSystem*>(mpOdeSystem)->GetG1EventTime() + GetSDuration();
                 mDivideTime = GetOdeStopTime();
                 mG2Duration = mDivideTime - mG2PhaseStartTime;
-                // double ccLength = GetOdeStopTime() - mBirthTime;
-                // std::cout << "Birth Time: " << mBirthTime << "\n"
-                //           << "G1 Time: " << GetG1Time() << "\n"
-                //           << "G1: " << mG1Duration << "\n"
-                //           << "G2 Start: " << mG2PhaseStartTime << "\n"
-                //           << "Divide Time" << mDivideTime << "\n"
-                //           << "G2 Length: " << mG2Duration << "\n"
-                //           << "CC Length: " << ccLength << "\n";
+                double ccLength = GetOdeStopTime() - mBirthTime;
+                std::cout << "Birth Time: " << mBirthTime << "\n"
+                          << "G1 Time: " << GetG1Time() << "\n"
+                          << "G1: " << mG1Duration << "\n"
+                          << "G2 Start: " << mG2PhaseStartTime << "\n"
+                          << "Divide Time" << mDivideTime << "\n"
+                          << "G2 Length: " << mG2Duration << "\n"
+                          << "CC Length: " << ccLength << "\n";
             }
         }
         else
@@ -240,6 +243,9 @@ void Attila2006CellCycleModel::UpdateG1Time(Attila2006CellCycleModel& rModel)
 {
     assert(mpOdeSystem != nullptr);
     assert(mpCell != nullptr);
+
+    //Consult the ODE system to determine whether the event ending G1 has occured.
+    //G1 Trigger records that the event has occured so it only updates a G1 time once.
 
     bool g1_true = static_cast<AttilaHybrid2006OdeSystem*>(mpOdeSystem)->CalculateG1Event(SimulationTime::Instance()->GetTime(), mpOdeSystem->rGetStateVariables());
 

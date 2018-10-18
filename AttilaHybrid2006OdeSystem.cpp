@@ -57,8 +57,13 @@ AttilaHybrid2006OdeSystem::~AttilaHybrid2006OdeSystem()
 
 void AttilaHybrid2006OdeSystem::Init()
 {
-    double randomDeviate = RandomNumberGenerator::Instance()->NormalRandomDeviate(1,0.0002);
-    mV = 0.25*randomDeviate;
+    double randomV = RandomNumberGenerator::Instance()->ranf();
+    mV = 0.25 - (randomV * 0.025);
+    double mVRand = 0.268022 * 0.1 * RandomNumberGenerator::Instance()->NormalRandomDeviate(0, 0.02);
+    mV = 0.437587 * 0.35 + mVRand;
+    double mK4bRand = 0.546891 * 0.5 * RandomNumberGenerator::Instance()->NormalRandomDeviate(0, 0.0358267);
+    mK4b = 0.8548 * 3 + mK4bRand;
+    std::cout << mV << " " << mK4b << "\n";
     mKwr = 0.2;
     mJwr = 0.1;
     mKw = 0.5;
@@ -66,8 +71,9 @@ void AttilaHybrid2006OdeSystem::Init()
     mK3a = 0.1;
     mK3b = 3;
     mJ3 = 0.01;
-    mK4a = 0;
-    mK4b = 1;
+    // mK4a = 0;
+    mK4a = 0.1;
+    // mK4b = 2;
     mJ4 = 0.05;
     mK25 = 0.5;
     mJ25 = 0.1;
@@ -89,6 +95,9 @@ void AttilaHybrid2006OdeSystem::Init()
     mKi20 = 0.25;
     mJi20 = 0.05;
     mKCdc20i = 0.5;
+    mG1 = false;
+    mG1EventTime = DBL_MAX;
+    mOdeStopTime = DBL_MAX;
 }
 
 void AttilaHybrid2006OdeSystem::EvaluateYDerivatives(double time, const std::vector<double>& rY, std::vector<double>& rDY)
@@ -127,7 +136,7 @@ void AttilaHybrid2006OdeSystem::EvaluateYDerivatives(double time, const std::vec
     temp2 = (mVawee * (1 - x3) + mVbwee * x3) * x1;
     temp3 = (mK2a * (1 - x7) + mK2b * x7) * x1;
 
-    dx1 = mV + temp1  - temp2 - temp3;
+    dx1 = mV + temp1 - temp2 - temp3;
 
     temp3 = (mK2a * (1 - x7) + mK2b * x7) * x2;
 
@@ -135,7 +144,7 @@ void AttilaHybrid2006OdeSystem::EvaluateYDerivatives(double time, const std::vec
 
     temp1 = (mKwr * (1 - x3)) / (mJwr + 1 - x3);
     temp2 = (mKw * x1 * x3) / (mJw + x3);
-    dx3 =  temp1 - temp2;
+    dx3 = temp1 - temp2;
 
     temp1 = (mK25 * x1 * (1 - x4)) / (mJ25 + 1 - x4);
     temp2 = (mK25r * x4) / (mJ25r + x4);
@@ -147,11 +156,11 @@ void AttilaHybrid2006OdeSystem::EvaluateYDerivatives(double time, const std::vec
     temp4 = mKCdc20i * x5;
     dx5 = temp1 + temp2 - temp3 - temp4;
 
-    temp1 = mK1*x6;
+    temp1 = mK1 * x6;
     dx6 = temp3 - temp1 - temp2;
 
-    temp1 = ((mK3a + mK3b * x6) * (1 - x7))/(mJ3 + 1 - x7);
-    temp2 = ((mK4a + mK4b * x1) * x7)/(mJ4 + x7);
+    temp1 = ((mK3a + mK3b * x6) * (1 - x7)) / (mJ3 + 1 - x7);
+    temp2 = ((mK4a + mK4b * x1) * x7) / (mJ4 + x7);
     dx7 = temp1 - temp2;
 
     // std::cout << time << " "
@@ -165,7 +174,7 @@ void AttilaHybrid2006OdeSystem::EvaluateYDerivatives(double time, const std::vec
 
     // std::cout << rDY[6] << " ";
     // Multiply by 60 beacuase the Tyson and Novak 2001 paper has time in minutes, not hours
-    double scalingFactor = 2.0;
+    double scalingFactor = 1.5;
     rDY[0] = dx1 * scalingFactor;
     rDY[1] = dx2 * scalingFactor;
     rDY[2] = dx3 * scalingFactor;
@@ -179,7 +188,19 @@ bool AttilaHybrid2006OdeSystem::CalculateG1Event(double time, const std::vector<
 {
     std::vector<double> dy(rY.size());
     EvaluateYDerivatives(time, rY, dy);
-    return ((rY[3] > 0.2) && (dy[3] > 0.0) && (rY[1] > 0.4) && (dy[2] < 0.0));
+
+    // if ((rY[3] > 0.2) && (dy[3] > 0.0) && (rY[1] > 0.3) && (rY[2] > 0.3))
+    if ((dy[1] > 0) && (rY[1] > 0.4) && (rY[2] > 0.3))
+    {
+        if (mG1 == false)
+        {
+            mG1EventTime = time;
+        }
+        mG1 = true;
+    }
+
+    // return ((rY[3] > 0.2) && (dy[3] > 0.0) && (rY[1] > 0.3) && (rY[2] > 0.3));
+    return ((dy[1] > 0) && (rY[1] > 0.4) && (rY[2] > 0.3));
 }
 
 bool AttilaHybrid2006OdeSystem::CalculateStoppingEvent(double time, const std::vector<double>& rY)
@@ -191,25 +212,74 @@ bool AttilaHybrid2006OdeSystem::CalculateStoppingEvent(double time, const std::v
     // Only call this a stopping condition if the mass of the cell is over 0.6
     // (normally cycles from 0.5-1.0 ish!)
 
-    return (((rY[0] < 0.23) && (dy[0] < 0.0)) && (rY[6] > 0.8));
+    if (mG1 == true)
+    {
+        if (((rY[0] < 0.23) && (dy[0] < 0.0)) && (rY[6] > 0.8))
+        {
+            mG1 = false;
+            mOdeStopTime = time;
+            std::cout << "mV: " << mV << "\n";
+            std::cout << "mK4b: " << mK4b << "\n";
+        }
+        return (((rY[0] < 0.23) && (dy[0] < 0.0)) && (rY[6] > 0.8));
+    }
+    else
+    {
+        return 0;
+    }
 }
 
-double AttilaHybrid2006OdeSystem::CalculateRootFunction(double time, const std::vector<double>& rY)
+// double AttilaHybrid2006OdeSystem::CalculateRootFunction(double time, const std::vector<double>& rY)
+// {
+//     std::vector<double> dy(rY.size());
+//     EvaluateYDerivatives(time, rY, dy);
+
+//     if (mG1 == false)
+//     {
+//         return 1.0;
+//     }
+
+//     if (dy[0] >= 0.0)
+//     {
+//         return 1.0;
+//     }
+
+//     if (rY[6] <= 0.8)
+//     {
+//         return 1.0;
+//     }
+
+//     return rY[0] - 0.23;
+// }
+
+double AttilaHybrid2006OdeSystem::GetG1EventTime()
 {
-    std::vector<double> dy(rY.size());
-    EvaluateYDerivatives(time, rY, dy);
+    return mG1EventTime;
+}
 
-    if (dy[0] >= 0.0)
-    {
-        return 1.0;
-    }
+double AttilaHybrid2006OdeSystem::GetStopTime()
+{
+    return mOdeStopTime;
+}
 
-    if (rY[6] <= 0.8)
-    {
-        return 1.0;
-    }
+void AttilaHybrid2006OdeSystem::SetmV(double mv)
+{
+    mV = mv;
+}
 
-    return rY[0] - 0.23;
+void AttilaHybrid2006OdeSystem::SetmVRand(double mvrand)
+{
+    mVRand = mvrand;
+}
+
+void AttilaHybrid2006OdeSystem::SetmK4b(double mk4b)
+{
+    mK4b = mk4b;
+}
+
+void AttilaHybrid2006OdeSystem::SetmK4bRand(double mk4brand)
+{
+    mK4bRand = mk4brand;
 }
 
 template <>

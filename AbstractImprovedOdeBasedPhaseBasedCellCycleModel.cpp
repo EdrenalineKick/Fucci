@@ -36,13 +36,13 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "AbstractImprovedOdeBasedPhaseBasedCellCycleModel.hpp"
 
 AbstractImprovedOdeBasedPhaseBasedCellCycleModel::AbstractImprovedOdeBasedPhaseBasedCellCycleModel(double lastTime,
-                                                               boost::shared_ptr<AbstractCellCycleModelOdeSolver> pOdeSolver)
-    : CellCycleModelOdeHandler(lastTime, pOdeSolver),
-      mDivideTime(lastTime),
-      mG2PhaseStartTime(DBL_MAX),
-      mG1EventOccured(false),
-      mG1Trigger(false),
-      mG1Time(DBL_MAX)
+                                                                                                   boost::shared_ptr<AbstractCellCycleModelOdeSolver> pOdeSolver)
+        : CellCycleModelOdeHandler(lastTime, pOdeSolver),
+          mDivideTime(lastTime),
+          mG2PhaseStartTime(DBL_MAX),
+          mG1EventOccured(false),
+          mG1Trigger(false),
+          mG1Time(DBL_MAX)
 {
     AbstractPhaseBasedCellCycleModel::SetBirthTime(lastTime);
 }
@@ -52,10 +52,10 @@ AbstractImprovedOdeBasedPhaseBasedCellCycleModel::~AbstractImprovedOdeBasedPhase
 }
 
 AbstractImprovedOdeBasedPhaseBasedCellCycleModel::AbstractImprovedOdeBasedPhaseBasedCellCycleModel(const AbstractImprovedOdeBasedPhaseBasedCellCycleModel& rModel)
-    : AbstractPhaseBasedCellCycleModel(rModel),
-      CellCycleModelOdeHandler(rModel),
-      mDivideTime(rModel.mDivideTime),
-      mG2PhaseStartTime(rModel.mG2PhaseStartTime)
+        : AbstractPhaseBasedCellCycleModel(rModel),
+          CellCycleModelOdeHandler(rModel),
+          mDivideTime(rModel.mDivideTime),
+          mG2PhaseStartTime(rModel.mG2PhaseStartTime)
 {
     /*
      * Initialize only those member variables defined in this class.
@@ -106,31 +106,29 @@ void AbstractImprovedOdeBasedPhaseBasedCellCycleModel::UpdateCellCyclePhase()
     }
 
     if (current_time > mLastTime)
-    {   
+    {
         if (!this->mFinishedRunningOdes)
         {
             // Update whether a stopping event has occurred
             this->mFinishedRunningOdes = SolveOdeToTime(current_time);
 
             // Check no concentrations have gone negative
-            for (unsigned i=0; i<mpOdeSystem->GetNumberOfStateVariables(); i++)
+            for (unsigned i = 0; i < mpOdeSystem->GetNumberOfStateVariables(); i++)
             {
                 if (mpOdeSystem->rGetStateVariables()[i] < -DBL_EPSILON)
                 {
                     // LCOV_EXCL_START
-                    EXCEPTION("A protein concentration " << i << " has gone negative (" <<
-                              mpOdeSystem->rGetStateVariables()[i] << ")\n"
-                              << "Chaste predicts that the CellCycleModel numerical method is probably unstable.");
+                    EXCEPTION("A protein concentration " << i << " has gone negative (" << mpOdeSystem->rGetStateVariables()[i] << ")\n"
+                                                         << "Chaste predicts that the CellCycleModel numerical method is probably unstable.");
                     // LCOV_EXCL_STOP
                 }
             }
             if (this->mFinishedRunningOdes)
-            {   
+            {
                 // Update durations of each phase
                 mG1Duration = GetG1Time() - mBirthTime - GetMDuration();
                 mG2PhaseStartTime = GetG1Time() + GetSDuration();
                 mDivideTime = GetOdeStopTime();
-            
 
                 // Update phase
                 if (current_time >= mG2PhaseStartTime)
