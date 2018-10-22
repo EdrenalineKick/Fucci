@@ -36,8 +36,8 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef ATTILAHYBRID2006ODESYSTEM_HPP_
 #define ATTILAHYBRID2006ODESYSTEM_HPP_
 
-#include "ChasteSerialization.hpp"
 #include <boost/serialization/base_object.hpp>
+#include "ChasteSerialization.hpp"
 
 #include <cmath>
 #include <iostream>
@@ -52,7 +52,6 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 class AttilaHybrid2006OdeSystem : public AbstractOdeSystem
 {
 private:
-
     double mV;
 
     double mKwr;
@@ -115,7 +114,15 @@ private:
 
     double mKCdc20i;
 
+    bool mG1;
 
+    double mG1EventTime;
+
+    double mOdeStopTime;
+
+    double mVRand;
+
+    double mK4bRand;
 
     friend class boost::serialization::access;
     /**
@@ -124,20 +131,19 @@ private:
      * @param archive the archive
      * @param version the current version of this class
      */
-    template<class Archive>
-    void serialize(Archive & archive, const unsigned int version)
+    template <class Archive>
+    void serialize(Archive& archive, const unsigned int version)
     {
-        archive & boost::serialization::base_object<AbstractOdeSystem>(*this);
+        archive& boost::serialization::base_object<AbstractOdeSystem>(*this);
     }
 
 public:
-
     /**
      * Constructor.
      *
      * @param stateVariables optional initial conditions for state variables (only used in archiving)
      */
-    AttilaHybrid2006OdeSystem(std::vector<double> stateVariables=std::vector<double>());
+    AttilaHybrid2006OdeSystem(std::vector<double> stateVariables = std::vector<double>());
 
     /**
      * Destructor.
@@ -161,6 +167,8 @@ public:
      */
     void EvaluateYDerivatives(double time, const std::vector<double>& rY, std::vector<double>& rDY);
 
+    void SetG1EventTime(double g1eventtime);
+
     bool CalculateG1Event(double time, const std::vector<double>& rY);
 
     /**
@@ -183,8 +191,16 @@ public:
      *
      * @return How close we are to the root of the stopping condition
      */
-    double CalculateRootFunction(double time, const std::vector<double>& rY);
-    
+    // double CalculateRootFunction(double time, const std::vector<double>& rY);
+
+    double GetG1EventTime();
+
+    double GetStopTime();
+
+    void SetmV(double mv);
+    void SetmVRand(double mvrand);
+    void SetmK4b(double mk4b);
+    void SetmK4bRand(double mk4brand);
 };
 
 // Declare identifier for the serializer
@@ -195,33 +211,33 @@ namespace boost
 {
 namespace serialization
 {
-/**
+    /**
  * Serialize information required to construct a AttilaHybrid2006OdeSystem.
  */
-template<class Archive>
-inline void save_construct_data(
-    Archive & ar, const AttilaHybrid2006OdeSystem * t, const unsigned int file_version)
-{
-    // Save data required to construct instance
-    const std::vector<double>& state_variables = t->rGetConstStateVariables();
-    ar & state_variables;
-}
+    template <class Archive>
+    inline void save_construct_data(
+        Archive& ar, const AttilaHybrid2006OdeSystem* t, const unsigned int file_version)
+    {
+        // Save data required to construct instance
+        const std::vector<double>& state_variables = t->rGetConstStateVariables();
+        ar& state_variables;
+    }
 
-/**
+    /**
  * De-serialize constructor parameters and initialise a AttilaHybrid2006OdeSystem.
  */
-template<class Archive>
-inline void load_construct_data(
-    Archive & ar, AttilaHybrid2006OdeSystem * t, const unsigned int file_version)
-{
-    // Retrieve data from archive required to construct new instance
-    std::vector<double> state_variables;
-    ar & state_variables;
+    template <class Archive>
+    inline void load_construct_data(
+        Archive& ar, AttilaHybrid2006OdeSystem* t, const unsigned int file_version)
+    {
+        // Retrieve data from archive required to construct new instance
+        std::vector<double> state_variables;
+        ar& state_variables;
 
-    // Invoke inplace constructor to initialise instance
-    ::new(t)AttilaHybrid2006OdeSystem(state_variables);
-}
-}
-} // namespace ...
+        // Invoke inplace constructor to initialise instance
+        ::new (t) AttilaHybrid2006OdeSystem(state_variables);
+    }
+} // namespace serialization
+} // namespace boost
 
 #endif /*ATTILAHYBRID2006ODESYSTEM_HPP_*/

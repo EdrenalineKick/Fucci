@@ -1,44 +1,47 @@
 #include "../../../projects/Fucci/src/RandomMotionForce.hpp"
 
-template<unsigned DIM>
+template <unsigned DIM>
 RandomMotionForce<DIM>::RandomMotionForce()
-    : AbstractForce<DIM>(),
-	  mMovementParameter(0.01)
+        : AbstractForce<DIM>(),
+          mMovementParameter(0.01)
 {
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 RandomMotionForce<DIM>::~RandomMotionForce()
 {
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 void RandomMotionForce<DIM>::SetMovementParameter(double movementParameter)
 {
     assert(movementParameter > 0.0);
     mMovementParameter = movementParameter;
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 double RandomMotionForce<DIM>::GetMovementParameter()
 {
     return mMovementParameter;
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 void RandomMotionForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>& rCellPopulation)
 {
-    double dt = SimulationTime::Instance()->GetTimeStep();
+    double randomMovementChance = 0.05;
+    double dt = 20*SimulationTime::Instance()->GetTimeStep();
 
-    // Iterate over the nodes
-    for (typename AbstractMesh<DIM, DIM>::NodeIterator node_iter = rCellPopulation.rGetMesh().GetNodeIteratorBegin();
-         node_iter != rCellPopulation.rGetMesh().GetNodeIteratorEnd();
-         ++node_iter)
+    if (RandomNumberGenerator::Instance()->ranf() < randomMovementChance)
     {
-                c_vector<double, DIM> force_contribution;
-        for (unsigned i=0; i<DIM; i++)
+        // Iterate over the nodes
+        for (typename AbstractMesh<DIM, DIM>::NodeIterator node_iter = rCellPopulation.rGetMesh().GetNodeIteratorBegin();
+             node_iter != rCellPopulation.rGetMesh().GetNodeIteratorEnd();
+             ++node_iter)
         {
-            /*
+            c_vector<double, DIM> force_contribution;
+            for (unsigned i = 0; i < DIM; i++)
+            {
+                /*
              * The force on this cell is scaled with the timestep such that when it is
              * used in the discretised equation of motion for the cell, we obtain the
              * correct formula
@@ -47,15 +50,16 @@ void RandomMotionForce<DIM>::AddForceContribution(AbstractCellPopulation<DIM>& r
              *
              * where W is a standard normal random variable.
              */
-            double xi = RandomNumberGenerator::Instance()->StandardNormalRandomDeviate();
+                double xi = RandomNumberGenerator::Instance()->StandardNormalRandomDeviate();
 
-            force_contribution[i] = (sqrt(2.0*mMovementParameter*dt)/dt)*xi;
+                force_contribution[i] = (sqrt(2.0 * mMovementParameter * dt) / dt) * xi;
+            }
+            node_iter->AddAppliedForceContribution(force_contribution);
         }
-        node_iter->AddAppliedForceContribution(force_contribution);
     }
 }
 
-template<unsigned DIM>
+template <unsigned DIM>
 void RandomMotionForce<DIM>::OutputForceParameters(out_stream& rParamsFile)
 {
     *rParamsFile << "\t\t\t<MovementParameter>" << mMovementParameter << "</MovementParameter> \n";
